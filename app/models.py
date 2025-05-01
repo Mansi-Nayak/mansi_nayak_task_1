@@ -36,9 +36,7 @@ class Task(TimeStampedModel):
     title = models.CharField(max_length=200)
     detail = models.TextField()
     due_date = models.DateTimeField(default=timezone.now)
-    status = models.CharField(
-        max_length=200, choices=STATUS, default="Inprogress"
-    )
+    status = models.CharField(max_length=200, choices=STATUS, default="Inprogress")
     priority = models.CharField(
         max_length=200, choices=PRIORITY, default="Intermediate"
     )
@@ -59,12 +57,8 @@ class Task(TimeStampedModel):
 class Comment(TimeStampedModel):
     id = models.AutoField(primary_key=True)
     text = models.TextField()
-    task = models.ForeignKey(
-        Task, on_delete=models.CASCADE, related_name="comment"
-    )
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comments"
-    )
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="comment")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
 
     def __str__(self):
         return self.text
