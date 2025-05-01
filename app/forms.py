@@ -49,7 +49,6 @@ class CommentForm(forms.ModelForm):
 
 
 class TaskStatusForm(forms.ModelForm):
-
     class Meta:
         model = Task
         fields = ["status"]
