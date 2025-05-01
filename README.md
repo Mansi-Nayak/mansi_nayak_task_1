@@ -2,3 +2,4 @@
 
 name = mansi nayak
 project = task_management
+app name = app
