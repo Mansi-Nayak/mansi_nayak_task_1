@@ -2,20 +2,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 
-from .views import (
-    CreateTaskView,
-    DeleteTaskView,
-    DetailTaskView,
-    Home,
-    LoginView,
-    LogoutView,
-    SignUpView,
-    TaskListView,
-    TaskReportView,
-    TaskStatusUpdateView,
-    UpdateTaskView,
-    UserListView,
-)
+from .views import (CreateTaskView, DeleteTaskView, DetailTaskView, Home,
+                    LoginView, LogoutView, SignUpView, TaskListView,
+                    TaskReportView, TaskStatusUpdateView, UpdateTaskView,
+                    UserListView)
 
 urlpatterns = [
     path("", Home.as_view(), name="home"),
@@ -29,9 +19,7 @@ urlpatterns = [
         DetailTaskView.as_view(),
         name="detail_task",
     ),
-    path(
-        "taskupdate/task/<int:pk>/", UpdateTaskView.as_view(), name="edit_task"
-    ),
+    path("taskupdate/task/<int:pk>/", UpdateTaskView.as_view(), name="edit_task"),
     path(
         "delete/task/<int:task_id>",
         DeleteTaskView.as_view(),
@@ -49,6 +37,4 @@ urlpatterns = [
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 if settings.DEBUG:
-    urlpatterns += static(
-        settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-    )
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
