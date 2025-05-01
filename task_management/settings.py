@@ -81,7 +81,7 @@ DATABASES = {
         "NAME": "test_task",
         "USER": "test_user",
         "PASSWORD": "demo",
-        "HOST": "localhost",  #change according docker image name (of db)
+        "HOST": "localhost",  # change according docker image name (of db)
         "PORT": "5433",
     }
 }
