@@ -46,9 +46,7 @@ class SignUpView(TemplateView):
         form = SignUpForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Account created successfully! Please log in."
-            )
+            messages.success(request, "Account created successfully! Please log in.")
             return redirect("login")
         return render(request, self.template_name, {"form": form})
 
@@ -159,9 +157,7 @@ class UpdateTaskView(TemplateView):
             if task_update.assigned_to:
                 send_task_update_email(task_update)
             return redirect("task_list")
-        return render(
-            request, self.template_name, {"form": form, "task": task}
-        )
+        return render(request, self.template_name, {"form": form, "task": task})
 
 
 class DeleteTaskView(TemplateView):
@@ -169,12 +165,13 @@ class DeleteTaskView(TemplateView):
     View to delete a task.
     """
 
-    def post(self, request, pk):
+    def post(self, request, task_id):
         """
         Handle task deletion.
         """
-        task = Task.objects.filter(id=pk).first()
-        task.delete()
+        task = Task.objects.filter(id=task_id).first()
+        if task:
+            task.delete()
         return redirect("task_list")
 
 
@@ -263,6 +260,21 @@ class UserListView(TemplateView):
         return render(request, self.template_name, context=context)
 
 
+# class UserListView(TemplateView):
+#     """
+#     View to display a list of users.
+#     """
+#     template_name = "user_list.html"
+
+#     def get(self, request):
+#         """
+#         Display all users.
+#         """
+#         users = User.objects.all()  # Correct variable name for users
+#         context = {"users": users}  # Use "users" in context, not "user"
+#         return render(request, self.template_name, context=context)
+
+
 class TaskStatusUpdateView(TemplateView):
     """
     View to update the status of a task.
@@ -279,9 +291,7 @@ class TaskStatusUpdateView(TemplateView):
         task = Task.objects.filter(id=pk, assigned_to=user_id).first()
         if task:
             form = TaskStatusForm(instance=task)
-            return render(
-                request, self.template_name, {"form": form, "task": task}
-            )
+            return render(request, self.template_name, {"form": form, "task": task})
         else:
             return redirect("task_list")
 
@@ -294,9 +304,7 @@ class TaskStatusUpdateView(TemplateView):
         if form.is_valid():
             form.save()
             return redirect("task_list")
-        return render(
-            request, self.template_name, {"form": form, "task": task}
-        )
+        return render(request, self.template_name, {"form": form, "task": task})
 
 
 class TaskReportView(TemplateView):
@@ -355,9 +363,7 @@ class TaskReportView(TemplateView):
 
         # Generate CSV
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            'attachment; filename="filtered_tasks.csv"'
-        )
+        response["Content-Disposition"] = 'attachment; filename="filtered_tasks.csv"'
 
         writer = csv.writer(response)
         writer.writerow(
