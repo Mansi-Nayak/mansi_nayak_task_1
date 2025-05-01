@@ -39,9 +39,7 @@ class CreateTaskViewTest(TestCase):
             "priority": "Major",
         }
 
-        self.client.login(
-            username="testuser@example.com", password="Str0ngPa$$w0rd!"
-        )
+        self.client.login(username="testuser@example.com", password="Str0ngPa$$w0rd!")
 
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
@@ -62,9 +60,7 @@ class CreateTaskViewTest(TestCase):
             "status": "Inprogress",
             "priority": "Major",
         }
-        self.client.login(
-            username="testuser@example.com", password="Str0ngPa$$w0rd!"
-        )
+        self.client.login(username="testuser@example.com", password="Str0ngPa$$w0rd!")
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "create_task.html")
@@ -96,9 +92,7 @@ class TaskUpdateViewTest(TestCase):
         self.url = reverse("edit_task", kwargs={"pk": self.task.pk})
 
     def test_get_update_task(self):
-        self.client.login(
-            username="testuser@example.com", password="Str0ngPa$$w0rd!"
-        )
+        self.client.login(username="testuser@example.com", password="Str0ngPa$$w0rd!")
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "task_update.html")
@@ -181,7 +175,6 @@ class TaskListViewTest(TestCase):
 
 
 class TaskStatusUpdateViewTest(TestCase):
-
     def setUp(self):
         self.User = get_user_model()
         self.assigned_by_user = self.User.objects.create_user(
@@ -206,9 +199,13 @@ class TaskStatusUpdateViewTest(TestCase):
         self.url = reverse("status_update", kwargs={"pk": self.task.pk})
 
     def test_get_update_task(self):
-        self.client.login(
-            username="testuser@example.com", password="Str0ngPa$$w0rd!"
+        login_successful = self.client.login(
+            username="assign@gmail.com", password="password123"
         )
+        self.assertTrue(login_successful)
+
+        self.assertTrue("_auth_user_id" in self.client.session)
+
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "status_update.html")
@@ -217,12 +214,62 @@ class TaskStatusUpdateViewTest(TestCase):
         data = {
             "status": "Complete",
         }
-        self.client.login(
-            username="testuser@example.com", password="Str0ngPa$$w0rd!"
-        )
+        self.client.login(username="testuser@example.com", password="Str0ngPa$$w0rd!")
         response = self.client.post(self.url, data)
         self.assertEqual(response.status_code, 302)
 
         self.task.refresh_from_db()
         self.assertEqual(self.task.status, "Complete")
         self.assertRedirects(response, reverse("task_list"))
+
+
+class TaskDetailAndDeleteViewsTest(TestCase):
+    def setUp(self):
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="owner", email="owner@example.com", password="password123"
+        )
+        self.task = Task.objects.create(
+            title="Detail Task",
+            detail="Task detail for viewing",
+            assigned_to=self.user,
+            assigned_by=self.user,
+            status="Inprogress",
+            priority="Major",
+            due_date="2025-01-01",
+        )
+
+    def test_detail_task_view(self):
+        self.client.login(username="owner", password="password123")
+        response = self.client.get(reverse("detail_task", kwargs={"pk": self.task.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "task_detail.html")
+        self.assertContains(response, "Detail Task")  # Corrected content check
+
+    def test_delete_task_view(self):
+        self.client.login(username="owner", password="password123")
+
+        # Confirm the task exists before deletion
+        self.assertTrue(Task.objects.filter(pk=self.task.pk).exists())
+
+        response = self.client.post(
+            reverse("delete_task", kwargs={"task_id": self.task.pk})
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("task_list"))
+        self.assertFalse(Task.objects.filter(pk=self.task.pk).exists())
+
+
+class ReportViewsTest(TestCase):
+    def setUp(self):
+        self.User = get_user_model()
+        self.user = self.User.objects.create_user(
+            username="adminuser", email="admin@example.com", password="adminpass123"
+        )
+
+    def test_task_report_view(self):
+        self.client.login(username="adminuser", password="adminpass123")
+        response = self.client.get(reverse("task_report"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "task_report.html")
