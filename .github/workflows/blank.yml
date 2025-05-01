@@ -37,7 +37,8 @@ jobs:
 
     - name: Deploy to server via SSH
       run: |
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        # ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        ssh -o StrictHostKeyChecking=no developer@115.246.60.212
           cd /path/to/your/project
           git pull origin main
           source venv/bin/activate
