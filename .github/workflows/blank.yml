@@ -44,7 +44,7 @@ jobs:
         coverage html
 
     - name: Upload HTML coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v3.0.0
       with:
         name: coverage-html-report
         path: htmlcov
