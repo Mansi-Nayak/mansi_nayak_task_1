@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+# from rest_framework_simplejwt.views import (TokenObtainPairView,
+#                                             TokenRefreshView)
+from rest_framework_simplejwt import views as jwt_views
 
 from .views import (CreateTaskView, DeleteTaskView, DetailTaskView, Home,
                     LoginView, LogoutView, SignUpView, TaskListView,
@@ -32,6 +35,12 @@ urlpatterns = [
         name="status_update",
     ),
     path("taskreport/", TaskReportView.as_view(), name="task_report"),
+    path(
+        "api/token/", jwt_views.TokenObtainPairView.as_view(), name="token_obtain_pair"
+    ),
+    path(
+        "api/token/refresh/", jwt_views.TokenRefreshView.as_view(), name="token_refresh"
+    ),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
