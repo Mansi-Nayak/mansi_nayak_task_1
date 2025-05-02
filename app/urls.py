@@ -2,10 +2,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 
-from .views import (CreateTaskView, DeleteTaskView, DetailTaskView, Home,
-                    LoginView, LogoutView, SignUpView, TaskListView,
-                    TaskReportView, TaskStatusUpdateView, UpdateTaskView,
-                    UserListView)
+from .views import (
+    CreateTaskView,
+    DeleteTaskView,
+    DetailTaskView,
+    Home,
+    LoginView,
+    LogoutView,
+    SignUpView,
+    TaskListView,
+    TaskReportView,
+    TaskStatusUpdateView,
+    UpdateTaskView,
+    UserListView,
+)
 
 urlpatterns = [
     path("", Home.as_view(), name="home"),
