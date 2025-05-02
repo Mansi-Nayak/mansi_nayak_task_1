@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.views.generic import TemplateView, View
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .email_utils import send_task_assigned_email, send_task_update_email
 from .forms import CommentForm, LoginForm, SignUpForm, TaskForm, TaskStatusForm
@@ -48,29 +49,52 @@ class SignUpView(TemplateView):
             form.save()
             messages.success(request, "Account created successfully! Please log in.")
             return redirect("login")
+        else:
+            print(form.errors)
         return render(request, self.template_name, {"form": form})
 
 
-class LoginView(TemplateView):
-    """
-    View to handle user login.
-    """
+# class LoginView(TemplateView):
+#     """
+#     View to handle user login.
+#     """
 
+#     template_name = "signin/login.html"
+
+#     def get(self, request):
+#         """
+#         Render the login form. Redirects if the user is already authenticated.
+#         """
+#         if request.user.is_authenticated:
+#             return redirect("home")
+#         form = LoginForm()
+#         return render(request, self.template_name, {"form": form})
+
+#     def post(self, request):
+#         """
+#         Authenticate the user and log them in if credentials are valid.
+#         """
+#         form = LoginForm(data=request.POST)
+#         if form.is_valid():
+#             email = form.cleaned_data.get("username")
+#             password = form.cleaned_data.get("password")
+#             user = authenticate(request, username=email, password=password)
+#             if user is not None:
+#                 login(request, user)
+#                 return redirect("task_list")
+#         return render(request, self.template_name, {"form": form})
+
+
+class LoginView(TemplateView):
     template_name = "signin/login.html"
 
     def get(self, request):
-        """
-        Render the login form. Redirects if the user is already authenticated.
-        """
         if request.user.is_authenticated:
             return redirect("home")
         form = LoginForm()
         return render(request, self.template_name, {"form": form})
 
     def post(self, request):
-        """
-        Authenticate the user and log them in if credentials are valid.
-        """
         form = LoginForm(data=request.POST)
         if form.is_valid():
             email = form.cleaned_data.get("username")
@@ -78,7 +102,17 @@ class LoginView(TemplateView):
             user = authenticate(request, username=email, password=password)
             if user is not None:
                 login(request, user)
-                return redirect("task_list")
+
+                # Issue JWT token
+                refresh = RefreshToken.for_user(user)
+                response = redirect("task_list")
+                response.set_cookie(
+                    "access_token", str(refresh.access_token), httponly=True
+                )
+                response.set_cookie("refresh_token", str(refresh), httponly=True)
+
+                return response
+
         return render(request, self.template_name, {"form": form})
 
 
