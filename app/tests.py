@@ -14,6 +14,82 @@ class HomeViewTest(TestCase):
         self.assertTemplateUsed(response, "home.html")
 
 
+class AuthViewTests(TestCase):
+    def setUp(self):
+        self.User = get_user_model()
+        self.register_url = reverse("signup")
+        self.login_url = reverse("login")
+        self.logout_url = reverse("logout")
+        self.home_url = reverse("home")
+
+        self.user = self.User.objects.create_user(
+            username="testuser", email="test@example.com", password="securePassword123"
+        )
+
+    def test_get_register_view(self):
+        response = self.client.get(self.register_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "signin/register.html")
+
+    def test_post_register_valid_data(self):
+        data = {
+            "email": "new@example.com",  # Only email field, not username
+            "first_name": "New",
+            "last_name": "User",
+            "password1": "newStrongPassword123",
+            "password2": "newStrongPassword123",
+        }
+        response = self.client.post(self.register_url, data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, self.login_url)
+        self.assertTrue(self.User.objects.filter(username="new@example.com").exists())
+
+    def test_post_register_invalid_data(self):
+        data = {
+            "username": "newuser",
+            "email": "bademail",  # invalid email
+            "password1": "pass",  # too weak
+            "password2": "differentpass",  # mismatch
+        }
+        response = self.client.post(self.register_url, data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("form", response.context)
+
+        form = response.context["form"]
+        self.assertTrue(form.errors)
+        self.assertIn("email", form.errors)
+        self.assertIn("Enter a valid email address.", form.errors["email"])
+
+    def test_get_login_view(self):
+        response = self.client.get(self.login_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "signin/login.html")
+
+    def test_post_login_valid_credentials(self):
+        data = {
+            "username": "test@example.com",  # email used as username
+            "password": "securePassword123",
+        }
+        response = self.client.post(self.login_url, data)
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse("task_list"))
+
+    def test_post_login_invalid_credentials(self):
+        data = {"username": "test@example.com", "password": "wrongPassword"}
+        response = self.client.post(self.login_url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("form", response.context)
+
+        form = response.context["form"]
+        self.assertTrue(form.errors)
+        self.assertIn("__all__", form.errors)
+        self.assertIn(
+            "Please enter a correct email and password. Note that both fields may be case-sensitive.",
+            form.errors["__all__"],
+        )
+
+
 class CreateTaskViewTest(TestCase):
     def setUp(self):
         self.User = get_user_model()
